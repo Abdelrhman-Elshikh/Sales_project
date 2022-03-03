@@ -1,52 +1,64 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import datetime
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QCompleter, QMessageBox
-import transferData, edit_window, loop, dumpFile, tableController
+import login
+import sellDataHelper, tableController
 import sqlite3
+
 db = sqlite3.connect("/home/abdelrhman/PycharmProjects/pythonProject/identifier.sqlite")
 
-myit = transferData.transData()
-sold = {}
-soldNames = []
 
-dataFile = dumpFile.date("datafile.txt", {})
-items = dataFile.readData()
-storeFile = dumpFile.date("storeFile.txt", {})
-itemsStore = storeFile.readData()
-soldFile = dumpFile.date("soldFile.txt", [])
-feesFile = dumpFile.date("feesFile.txt", [])
+class MainWindow(QtWidgets.QMainWindow):
+    TD = sellDataHelper.datahelper()
 
+    def closeEvent(self, event):
+        reply = QMessageBox.question(self, 'اغلاق', 'هل تريد الخروج', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+            db.commit()
+        else:
+            event.ignore()
 
-class Ui_MainWindow(object):
-    def __init__(self, userType):
+    def __init__(self, userType, maxV=30):
+        super().__init__()
         self.userType = userType
 
-    def setupUi(self, MainWindow, maxV=30,):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(875, 566)
+        self.setObjectName("MainWindow")
+        self.resize(875, 566)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
-        MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMinimumSize(QtCore.QSize(710, 510))
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+        self.setSizePolicy(sizePolicy)
+        self.setMinimumSize(QtCore.QSize(510, 550))
+        self.centralwidget = QtWidgets.QWidget(self)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.centralwidget.setMinimumSize(QtCore.QSize(700, 500))
+        self.centralwidget.setMinimumSize(QtCore.QSize(500, 500))
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName("gridLayout_4")
+        self.signOut = QtWidgets.QPushButton()
+        self.signOut.setText('تسجيل الخروج')
+        self.signOut.clicked.connect(lambda: self.loginPage())
+        self.signOut.setFocusPolicy(Qt.StrongFocus)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.signOut.sizePolicy().hasHeightForWidth())
+        self.signOut.setSizePolicy(sizePolicy)
+        self.signOut.setMaximumSize(QtCore.QSize(16777215, maxV))
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
         self.tabWidget.setSizePolicy(sizePolicy)
-        self.tabWidget.setMinimumSize(QtCore.QSize(700, 500))
+        self.tabWidget.setMinimumSize(QtCore.QSize(500, 500))
         self.tabWidget.setBaseSize(QtCore.QSize(0, 0))
         self.tabWidget.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.tabWidget.setObjectName("tabWidget")
@@ -66,7 +78,7 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setVerticalSpacing(10)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.gridLayout_5 = QtWidgets.QGridLayout()
-        self.gridLayout_5.setContentsMargins(5,0,5,0)
+        self.gridLayout_5.setContentsMargins(5, 0, 5, 0)
         self.gridLayout_5.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.itemName_2 = QtWidgets.QLineEdit(self.sell_payment)
@@ -220,22 +232,13 @@ class Ui_MainWindow(object):
         self.fromStore.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.fromStore.setObjectName("fromStore")
         self.gridLayout_40.addWidget(self.fromStore, 0, 0, 1, 1)
-
-        self.sellTable = tableController.TableWidget(["الكود","الاسم","النوع","العدد","السعر","الكلي","زياده","تقليل","حذف",3])
+        self.sellTable = tableController.sellTab(
+            ["الكود", "الاسم", "النوع", "العدد", "السعر", "الكلي", "المكان", "Icons/plus.png", "Icons/minus.png",
+             "Icons/delete.png", 3])
         self.gridLayout_2.addWidget(self.sellTable, 4, 0, 1, 1)
         self.gridLayout_20 = QtWidgets.QGridLayout()
         self.gridLayout_20.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_20.setObjectName("gridLayout_20")
-        self.deletelastitem = QtWidgets.QPushButton(self.sell_payment)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.deletelastitem.sizePolicy().hasHeightForWidth())
-        self.deletelastitem.setSizePolicy(sizePolicy)
-        self.deletelastitem.setMaximumSize(QtCore.QSize(16777215, maxV))
-        self.deletelastitem.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.deletelastitem.setObjectName("deletelastitem")
-        self.gridLayout_20.addWidget(self.deletelastitem, 0, 3, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_20.addItem(spacerItem, 0, 0, 1, 1)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -417,7 +420,7 @@ class Ui_MainWindow(object):
         self.sell.setDecimals(2)
         self.sell.setMaximum(5000.99)
         self.sell.setStepType(QtWidgets.QAbstractSpinBox.DefaultStepType)
-        self.sell.setObjectName("sell")
+        self.sell.setObjectName("sellTab")
         self.sell.clear()
         self.gridLayout_13.addWidget(self.sell, 0, 0, 1, 1)
         self.label_5 = QtWidgets.QLabel(self.add_item)
@@ -530,7 +533,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addItem(spacerItem7, 2, 0, 1, 1)
         spacerItem8 = QtWidgets.QSpacerItem(20, 3, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_3.addItem(spacerItem8, 0, 0, 1, 1)
-        if(self.userType):
+        if (self.userType):
             self.tabWidget.addTab(self.add_item, "")
         self.searchitem = QtWidgets.QWidget()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -547,10 +550,11 @@ class Ui_MainWindow(object):
         self.gridLayout_14.setVerticalSpacing(20)
         self.gridLayout_14.setObjectName("gridLayout_14")
         if self.userType:
-            self.searchTable = tableController.TableWidget(["الكود","الاسم", "النوع", "العدد", "سعر الجمله", "سعر النص جمله", "سعر البيع", "المكسب","Icons/edit.png","Icons/delete.png",2])
+            self.searchTable = tableController.Search(
+                ["الكود", "الاسم", "النوع", "العدد", "سعر الجمله", "سعر النص جمله", "سعر البيع", "المكسب",
+                 "Icons/edit.png", "Icons/delete.png", 2])
         else:
-            self.searchTable = tableController.TableWidget(["الكود","الاسم", "النوع", "العدد", "سعر البيع",0])
-
+            self.searchTable = tableController.Search(["الكود", "الاسم", "النوع", "العدد", "سعر البيع", 0])
         self.gridLayout_16 = QtWidgets.QGridLayout()
         self.gridLayout_16.setObjectName("gridLayout_16")
         self.itemName_3 = QtWidgets.QLineEdit(self.searchitem)
@@ -615,25 +619,7 @@ class Ui_MainWindow(object):
         self.gridLayout_18.addLayout(self.gridLayout_14, 0, 0, 1, 1)
         self.gridLayout_21 = QtWidgets.QGridLayout()
         self.gridLayout_21.setObjectName("gridLayout_21")
-        self.edit = QtWidgets.QPushButton(self.searchitem)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.edit.sizePolicy().hasHeightForWidth())
-        self.edit.setSizePolicy(sizePolicy)
-        self.edit.setMaximumSize(QtCore.QSize(16777215, maxV))
-        self.edit.setObjectName("edit")
         self.gridLayout_14.addWidget(self.searchTable)
-        self.gridLayout_21.addWidget(self.edit, 0, 3, 1, 1)
-        self.delete_2 = QtWidgets.QPushButton(self.searchitem)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.delete_2.sizePolicy().hasHeightForWidth())
-        self.delete_2.setSizePolicy(sizePolicy)
-        self.delete_2.setMaximumSize(QtCore.QSize(16777215, maxV))
-        self.delete_2.setObjectName("delete_2")
-        self.gridLayout_21.addWidget(self.delete_2, 0, 1, 1, 1)
         spacerItem9 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_21.addItem(spacerItem9, 0, 2, 1, 1)
         spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -642,9 +628,10 @@ class Ui_MainWindow(object):
         self.gridLayout_21.addItem(spacerItem11, 0, 4, 1, 1)
         self.gridLayout_18.addLayout(self.gridLayout_21, 1, 0, 1, 1)
         self.tabWidget.addTab(self.searchitem, "")
-        self.gridLayout_4.addWidget(self.tabWidget, 1, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.retranslateUi(MainWindow)
+        self.gridLayout_4.addWidget(self.signOut, 1, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.setCentralWidget(self.centralwidget)
+        self.retranslateUi()
         self.tabWidget.setCurrentIndex(0)
         self.sellingTab = QtWidgets.QWidget()
         self.gridLayout_23 = QtWidgets.QGridLayout(self.sellingTab)
@@ -742,23 +729,14 @@ class Ui_MainWindow(object):
         self.gridLayout_25 = QtWidgets.QGridLayout()
         self.gridLayout_25.setObjectName("gridLayout_25")
         if self.userType:
-            self.soldTable = tableController.TableWidget(["الكود","الاسم", "النوع", "العدد", "سعر الجمله", "سعر البيع", "المكسب", "السنه", "الشهر","اليوم" ,0])
+            self.soldTable = tableController.TableWidget(
+                ["الكود", "الاسم", "النوع", "العدد", "سعر الجمله", "سعر البيع", "المكسب", "التاريخ", 0])
         else:
-            self.soldTable = tableController.TableWidget(["الكود","الاسم", "النوع", "العدد", "سعر البيع","السنه", "الشهر", "اليوم",0])
+            self.soldTable = tableController.TableWidget(
+                ["الكود", "الاسم", "النوع", "العدد", "سعر البيع", 0])
         self.gridLayout_25.addWidget(self.soldTable)
         self.gridLayout_23.addLayout(self.gridLayout_25, 2, 0, 1, 1)
-        self.export = QtWidgets.QPushButton()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.export.sizePolicy().hasHeightForWidth())
-        self.export.setSizePolicy(sizePolicy)
-        self.export.setMaximumSize(QtCore.QSize(16777215, maxV))
-        self.export.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.export.setObjectName("export")
-        self.export.setText("تحويل الى ملف اكسل")
-        self.gridLayout_23.addWidget(self.export, 3, 0, 1, 1)
-        self.tabWidget.addTab(self.sellingTab,"المبيعات")
+        self.tabWidget.addTab(self.sellingTab, "المبيعات")
         self.fessTab = QtWidgets.QWidget()
         self.gridLayout_27 = QtWidgets.QGridLayout(self.fessTab)
         self.gridLayout_29 = QtWidgets.QGridLayout()
@@ -878,26 +856,6 @@ class Ui_MainWindow(object):
         self.gridLayout_36.addItem(spacerItem, 0, 4, 1, 1)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_36.addItem(spacerItem1, 0, 2, 1, 1)
-        self.editStore = QtWidgets.QPushButton()
-        self.editStore.setText("تعديل")
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.editStore.sizePolicy().hasHeightForWidth())
-        self.editStore.setSizePolicy(sizePolicy)
-        self.editStore.setMaximumSize(QtCore.QSize(16777215, maxV))
-        self.editStore.setObjectName("editStore")
-        self.gridLayout_36.addWidget(self.editStore, 0, 3, 1, 1)
-        self.deleteStore = QtWidgets.QPushButton()
-        self.deleteStore.setText("حذف")
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.deleteStore.sizePolicy().hasHeightForWidth())
-        self.deleteStore.setSizePolicy(sizePolicy)
-        self.deleteStore.setMaximumSize(QtCore.QSize(16777215, maxV))
-        self.deleteStore.setObjectName("deleteStore")
-        self.gridLayout_36.addWidget(self.deleteStore, 0, 1, 1, 1)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_36.addItem(spacerItem2, 0, 0, 1, 1)
         self.gridLayout_33.addLayout(self.gridLayout_36, 4, 0, 1, 1)
@@ -1011,13 +969,14 @@ class Ui_MainWindow(object):
         self.moveToShop.setText("نقل")
         self.gridLayout_37.addWidget(self.moveToShop, 0, 0, 1, 1)
         self.gridLayout_33.addLayout(self.gridLayout_37, 3, 0, 1, 1)
-        self.storeTable = tableController.TableWidget(["الاسم", "النوع", "العدد", "سعر الجمله", "سعر النص جمله", "سعر البيع", "المكسب","تعديل","حذف","نقل",2])
+        self.storeTable = tableController.TableWidget(
+            ["الكود", "الاسم", "النوع", "العدد", "سعر الجمله", "سعر النص جمله", "سعر البيع", "المكسب", "تعديل", "حذف",
+             "نقل", 3])
         self.gridLayout_33.addWidget(self.storeTable, 2, 0, 1, 1)
-        if(self.userType):
+        if (self.userType):
             self.tabWidget.addTab(self.searchinStore, "المخزن")
 
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
+        QtCore.QMetaObject.connectSlotsByName(self)
 
         ###########################
         #######Activations#########
@@ -1050,7 +1009,7 @@ class Ui_MainWindow(object):
         self.searchfor.addItem("فرش و امشاط")
         self.searchfor.addItem("احزمه و صدارات")
         self.searchfor.addItem("الكل")
-        self.searchfor.currentTextChanged.connect(lambda :self.search_cat(True))
+        self.searchfor.currentTextChanged.connect(lambda: self.search_cat(True))
 
         self.searchfor_4.addItem("رمل")
         self.searchfor_4.addItem("دراي فود")
@@ -1066,8 +1025,7 @@ class Ui_MainWindow(object):
         self.searchfor_4.addItem("فرش و امشاط")
         self.searchfor_4.addItem("احزمه و صدارات")
         self.searchfor_4.addItem("الكل")
-        self.searchfor_4.currentTextChanged.connect(lambda :self.search_cat(False))
-
+        self.searchfor_4.currentTextChanged.connect(lambda: self.search_cat(False))
 
         self.saveadding.clicked.connect(self.addItem)
         self.canceladding.clicked.connect(self.ClearAddData)
@@ -1076,54 +1034,47 @@ class Ui_MainWindow(object):
         self.itemType.setCurrentIndex(-1)
         self.searchfor.setCurrentIndex(-1)
         self.searchfor_4.setCurrentIndex(-1)
-        completer = QCompleter(list(items.keys()))
-        self.itemName_3.setCompleter(completer)
-        self.itemName_2.setCompleter(completer)
-        completer = QCompleter(list(itemsStore.keys()))
-        self.storeName.setCompleter(completer)
-        self.edit.hide()
-        self.delete_2.hide()
-        self.delete_2.clicked.connect(lambda: self.deleteItem(True))
-        self.deleteStore.clicked.connect(lambda: self.deleteItem(False))
-        self.edit.clicked.connect(lambda: self.editpage(True))
-        self.editStore.clicked.connect(lambda: self.editpage(False))
+        completer = list(db.execute("select name from 'shop'").fetchall())
+        Names = []
+        for Name in completer:
+            Names.append(Name[0])
+        self.itemName_3.setCompleter(QCompleter(Names))
+        self.itemName_2.setCompleter(QCompleter(Names))
+        self.itemName.setCompleter(QCompleter(Names))
 
+        completer = list(db.execute("select name from 'store'").fetchall())
+        Names.clear()
+        for Name in completer:
+            Names.append(Name[0])
+        self.storeName.setCompleter(QCompleter(Names))
         self.addsell.clicked.connect(self.sellItem)
         self.cancelsell.clicked.connect(self.clearSellTable)
-        self.deletelastitem.clicked.connect(self.removeRow)
         self.donesell.clicked.connect(self.doneSelling)
         self.donesell.hide()
-        self.deletelastitem.hide()
-        self.thisDay.clicked.connect(self.showforDay)
+        self.thisDay.clicked.connect(lambda: self.showforDay(datetime.date.today()))
         self.thisDay.click()
         self.thisMonth.clicked.connect(self.showforMonth)
         self.thisYear.clicked.connect(self.showforYear)
         self.searchbyDate.clicked.connect(self.showbyDate)
-        self.export.clicked.connect(self.toExcel)
         self.addFees.clicked.connect(self.addFee)
         self.set_state(False)
         self.moveToShop.clicked.connect(self.storeToShop)
-        self.export.hide()
-
-
-
 
         ###########################
         #######End ofActivations#########
         ###########################
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.retranslateUi(MainWindow)
+        self.setCentralWidget(self.centralwidget)
+        self.retranslateUi()
         self.tabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(self)
 
-    def retranslateUi(self, MainWindow):
+    def retranslateUi(self):
 
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "برنامج مبيعات"))
+        self.setWindowTitle(_translate("MainWindow", "برنامج مبيعات"))
         self.label_6.setText(_translate("MainWindow", "اسم المنتج"))
         self.addsell.setText(_translate("MainWindow", "اضافه"))
         self.label_7.setText(_translate("MainWindow", "الكميه او العدد"))
-        self.deletelastitem.setText(_translate("MainWindow", "حذف"))
         self.donesell.setText(_translate("MainWindow", "اتمام البيع"))
         self.cancelsell.setText(_translate("MainWindow", "الغاء"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.sell_payment), _translate("MainWindow", "انشاء فاتوره"))
@@ -1139,14 +1090,21 @@ class Ui_MainWindow(object):
         self.search.setText(_translate("MainWindow", "بحث"))
         self.label_8.setText(_translate("MainWindow", "اسم المنتج"))
         self.label_9.setText(_translate("MainWindow", "البحث عن:"))
-        self.edit.setText(_translate("MainWindow", "تعديل"))
-        self.delete_2.setText(_translate("MainWindow", "حذف"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.searchitem), _translate("MainWindow", "البحث عن منتج"))
         self.canEdit = False
 
     ###########################
     ########functions##########
     ###########################
+    def loginPage(self):
+        reply = QMessageBox.question(self, 'تسجيل الخروج', 'هل تريد تسجيل الخروج', QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.window = login.login()
+            self.window.show()
+            self.hide()
+        else:
+            pass
 
     def addFee(self):
         self.label_12.setStyleSheet("color : black")
@@ -1154,18 +1112,12 @@ class Ui_MainWindow(object):
         name = self.feeName.text()
         price = self.feePrice.value()
         if (len(self.feeName.text()) >= 3 and self.feePrice.value() > 0):
-            fees = feesFile.readData()
             if self.shopFees.isChecked():
-                fees.append({"name": name, "type": "مصاريف محل", "price": price,
-                             "year": datetime.datetime.now().year, "month": datetime.datetime.now().month,
-                             "day": datetime.datetime.now().day})
+                db.execute("insert into fees (name ,type, price, date ) values(?,?,?,?)",[name,"مصاريف محل",price,datetime.date.today()])
             elif self.personalFees.isChecked():
-                fees.append({"name": name, "type": "مصاريف شخصيه", "price": price,
-                             "year": datetime.datetime.now().year, "month": datetime.datetime.now().month,
-                             "day": datetime.datetime.now().day})
+                db.execute("insert into fees (name ,type, price, date ) values(?,?,?,?)",[name,"مصاريف شخصيه",price,datetime.date.today()])
             self.feePrice.clear()
             self.feeName.setText("")
-            feesFile.updateData(fees)
             self.thisDay.click()
         elif (len(self.feeName.text()) < 3):
             self.label_12.setStyleSheet("color : red")
@@ -1173,335 +1125,290 @@ class Ui_MainWindow(object):
         elif (self.feePrice.value() < 1):
             self.label_13.setStyleSheet("color : red")
 
-    def toExcel(self):
-
-        for R in range(self.soldTable.columnCount()):
-            print(self.soldTable.takeHorizontalHeaderItem(R).text())
-        for R in range(self.soldTable.rowCount()):
-            for C in range(self.soldTable.columnCount()):
-                print(self.soldTable.item(R, C).text())
-
     def storeToShop(self):
-        num = self.numMove.value()
-        self.numMove.clear()
-        it = myit.getData()
-        try:
-            items[it["name"]]["number"] += num
-            itemsStore[it["name"]]["number"] -= num
-            self.updateDataFile(False)
-            self.storeName.setText(it["name"])
-            self.searchforitem(False)
-            self.updateDataFile(True)
-        except KeyError:
-            mbox = QMessageBox(QMessageBox.Question, "اضافه منتج", "هذا المنتج غير متوفر في المحل. هل ترغب في اضافه هذا المنتج؟")
-            mbox.setDefaultButton(QMessageBox.Cancel)
-            mbox.setIcon(QMessageBox.Warning)
-            mbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            retval = mbox.exec_()
-            if retval == QMessageBox.Ok:
-                itemsStore[it["name"]]["number"] -= num
-                self.updateDataFile(False)
-                self.storeName.setText(it["name"])
-                self.searchforitem(False)
-                items[it["name"]] = {
-                    "name": it["name"],
-                    "type": it["type"],
-                    "number": num,
-                    "sellPrice": it["sellPrice"],
-                    "buyPrice": it["buyPrice"],
-                    "halfprice": it["halfprice"]
-                }
-                self.updateDataFile(True)
+        pass
+    #     num = self.numMove.value()
+    #     self.numMove.clear()
+    #     it = []
+    #     try:
+    #         items[it["name"]]["number"] += num
+    #         itemsStore[it["name"]]["number"] -= num
+    #         self.updateDataFile(False)
+    #         self.storeName.setText(it["name"])
+    #         self.searchforitem(False)
+    #         self.updateDataFile(True)
+    #     except KeyError:
+    #         mbox = QMessageBox(QMessageBox.Question, "اضافه منتج",
+    #                            "هذا المنتج غير متوفر في المحل. هل ترغب في اضافه هذا المنتج؟")
+    #         mbox.setDefaultButton(QMessageBox.Cancel)
+    #         mbox.setIcon(QMessageBox.Warning)
+    #         mbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+    #         retval = mbox.exec_()
+    #         if retval == QMessageBox.Ok:
+    #             itemsStore[it["name"]]["number"] -= num
+    #             self.updateDataFile(False)
+    #             self.storeName.setText(it["name"])
+    #             self.searchforitem(False)
+    #             items[it["name"]] = {
+    #                 "name": it["name"],
+    #                 "type": it["type"],
+    #                 "number": num,
+    #                 "sellPrice": it["sellPrice"],
+    #                 "buyPrice": it["buyPrice"],
+    #                 "halfprice": it["halfprice"]
+    #             }
 
     def showbyDate(self):
         day = self.dateEdit.date().day()
         month = self.dateEdit.date().month()
         year = self.dateEdit.date().year()
+        self.soldTable.clearTable()
+        if day < 10:
+            day = '0' + str(day)
+        if month < 10:
+            month = '0' + str(month)
+        date = str(year) + "-" + str(month) + "-" + str(day)
+        self.showforDay(date)
+
+    def showforDay(self, date):
         totalSold = 0
         totalBuy = 0
         totalFees = 0
         self.soldTable.clearTable()
-        mylist = soldFile.readData()
-        for x in mylist:
-            if (x["year"] == year and x["month"] == month and x["day"] == day):
-                self.insertItemSoldTable(x)
-                totalBuy += (x["buyPrice"] * x["number"])
-                totalSold += (x["sellPrice"] * x["number"])
-        self.soldTable.insertItem(["الاجمالي", "", "", str(round(totalBuy)), str(round(totalSold)), str(round(totalSold - totalBuy,3)), "", "",""])
-        mylist = feesFile.readData()
-        for x in mylist:
-            if (x["year"] == year and x["month"] == month and x["day"] == day):
-                self.soldTable.insertItem([x["name"], x["type"], "", "", "", str(x["price"]), str(x["year"]), str(x["month"]), str(x["day"])])
-                totalFees +=x["price"]
-        self.soldTable.insertItem(["صافي الربح", "", "", "", "", str(round(totalSold - totalBuy - totalFees,3)), "", "",""])
-
-    def showforDay(self):
-        totalSold = 0
-        totalBuy = 0
-        totalFees = 0
-        self.soldTable.clearTable()
-        mylist = soldFile.readData()
-        for x in mylist:
-            if(x["year"] == datetime.datetime.now().year and x["month"] == datetime.datetime.now().month and x["day"] == datetime.datetime.now().day):
-                self.insertItemSoldTable(x)
-                totalBuy += (x["buyPrice"] * x["number"])
-                totalSold += (x["sellPrice"] * x["number"])
+        mydate = "%" + str(date) + "%"
         if self.userType:
-            self.soldTable.insertItem(["الاجمالي", "", "", str(round(totalBuy)), str(round(totalSold)), str(round(totalSold - totalBuy,3)), "", "",""])
-        else:
-            self.soldTable.insertItem(["الاجمالي", "", "", str(round(totalSold)), "", "", ""])
-        mylist = feesFile.readData()
-        for x in mylist:
-            if (x["year"] == datetime.datetime.now().year and x["month"] == datetime.datetime.now().month and x["day"] == datetime.datetime.now().day):
-                if self.userType:
-                    self.soldTable.insertItem([x["name"], x["type"], "", "", "", str(x["price"]), str(x["year"]), str(x["month"]), str(x["day"])])
-                else:
-                    self.soldTable.insertItem([x["name"], x["type"], "",str(x["price"]), str(x["year"]), str(x["month"]), str(x["day"])])
-                totalFees += x["price"]
-        if self.userType:
-            self.soldTable.insertItem(["صافي الربح", "", "", "", "", str(round(totalSold - totalBuy - totalFees,3)), "", "", ""])
-        else:
-            self.soldTable.insertItem(["صافي الربح", "", "", str(round(totalSold - totalFees,3)), "", "", ""])
-
-    def showforMonth(self):
-        totalSold = 0
-        totalBuy = 0
-        totalFees = 0
-        self.soldTable.clearTable()
-        mylist = soldFile.readData()
-        for x in mylist:
-            if (x["year"] == datetime.datetime.now().year and x["month"] == datetime.datetime.now().month):
-                self.insertItemSoldTable(x)
-                totalBuy += (x["buyPrice"] * x["number"])
-                totalSold += (x["sellPrice"] * x["number"])
-        self.soldTable.insertItem(["الاجمالي", "", "", str(round(totalBuy)), str(round(totalSold)), str(round(totalSold - totalBuy,3)), "", "", ""])
-        mylist = feesFile.readData()
-        for x in mylist:
-            if (x["year"] == datetime.datetime.now().year and x["month"] == datetime.datetime.now().month):
-                self.soldTable.insertItem(
-                    [x["name"], x["type"], "", "", "", str(x["price"]), str(x["year"]), str(x["month"]), str(x["day"])])
-                totalFees += x["price"]
-        self.soldTable.insertItem(["صافي الربح", "", "", "", "", str(round(totalSold - totalBuy - totalFees,3)), "", "", ""])
-
-    def showforYear(self):
-        totalSold = 0
-        totalBuy = 0
-        totalFees =0
-        self.soldTable.clearTable()
-        mylist = soldFile.readData()
-        for x in mylist:
-            if (x["year"] == datetime.datetime.now().year):
-                self.insertItemSoldTable(x)
-                totalBuy += (x["buyPrice"] * x["number"])
-                totalSold += (x["sellPrice"] * x["number"])
-        self.soldTable.insertItem(["الاجمالي", "", "", str(round(totalBuy)), str(round(totalSold)), str(round(totalSold - totalBuy,3)), "", "", ""])
-        mylist = feesFile.readData()
-        for x in mylist:
-            if (x["year"] == datetime.datetime.now().year):
-                self.soldTable.insertItem(
-                    [x["name"], x["type"], "", "", "", str(x["price"]), str(x["year"]), str(x["month"]), str(x["day"])])
-                totalFees += x["price"]
-        self.soldTable.insertItem(["صافي الربح", "", "", "", "", str(round(totalSold - totalBuy - totalFees,3)), "", "", ""])
-
-    def insertItemSoldTable(self, list):
-        if self.userType:
-            sold = [list["name"], list["type"], str(list["number"]), str(round(list["buyPrice"]*list["number"], 3)), str(round(list["sellPrice"]*list["number"], 3)), str(round(list["number"] * (list["sellPrice"] - list["buyPrice"]),3)), str(list["year"]), str(list["month"]),str(list["day"])]
-        else:
-            sold = [list["name"], list["type"], str(list["number"]), str(round(list["sellPrice"]*list["number"], 3)), str(list["year"]), str(list["month"]),str(list["day"])]
-        self.soldTable.insertItem(sold)
-
-    def editpage(self, where):
-        if self.canEdit is True:
-            it = myit.getData()
-            transferData.doneEdit = False
-            self.x = QtWidgets.QMainWindow()
-            self.ui = edit_window.Ui_Window(it["name"], it["type"], it["number"], it["sellPrice"], it["buyPrice"], it["halfprice"])
-            self.ui.setupUi(self.x)
-            self.ui.retranslateUi(self.x)
-            self.x.show()
+            mylist = db.execute(
+                "select shop.ID ,sales.NAME ,shop.type, sales.number, shop.buy_price*sales.number, SELL_PRICE*sales.number,SOLD_DATE from sales left join shop on sales.NAME = shop.NAME  where sales.sold_date like ?",
+                [mydate])
+            mylist = list(mylist.fetchall())
             try:
-                loop.loop.exec_()
+                for x in mylist:
+                    x = list(x)
+                    x.insert(-1, x[-2] - x[-3])
+                    self.soldTable.insertItem(x)
+                    totalBuy += (x[4])
+                    totalSold += (x[5])
+                self.soldTable.insertItem(
+                    ["الاجمالي", "", "", "", totalBuy, totalSold, totalSold - totalBuy, ""])
             except:
                 pass
-            # self.x.hide()
-            if(where):
-                mylist = list(items.values())
-            elif(not where):
-                mylist = list(itemsStore.values())
-            for it in mylist:
-                if it["name"] == transferData.data["name"]:
-                    it["number"] = transferData.data["number"]
-                    it["sellPrice"] = transferData.data["sellPrice"]
-                    it["buyPrice"] = transferData.data["buyPrice"]
-                    it["halfprice"] = transferData.data["halfprice"]
-                    transferData.data = {"name": None,
-                                         "type": None,
-                                         "number": None,
-                                         "sellPrice": None,
-                                         "buyPrice": None,
-                                         "halfprice": None
-                                         }
-                    break
-            if transferData.doneEdit:
-                if(where):
-                    self.updateDataFile(where)
-                    self.itemName_3.setText(it["name"])
-                elif(not where):
-                    self.updateDataFile(where)
-                    self.storeName.setText(it["name"])
-                self.searchforitem(where)
+            mylist = db.execute("select * from fees where date like ?", [mydate])
+            try:
+                for x in mylist:
+                    x = list(x)
+                    self.soldTable.insertItem(["", x[0], x[1], "", "", "", x[2], x[3]])
+                    totalFees += x[2]
+                self.soldTable.insertItem(["صافي الريح", "", "", "", "", "", totalSold - totalBuy- totalFees, ""])
 
-    def searchforitem(self, where):
-        if(where):
-            self.edit.hide()
-            self.delete_2.hide()
+            except:pass
+        else:
+            mylist = db.execute(
+                "select shop.ID ,sales.NAME ,shop.type, sales.number, SELL_PRICE*sales.number from sales left join shop on sales.NAME = shop.NAME  where sales.sold_date like ?",
+                [mydate])
+            mylist = list(mylist.fetchall())
+            try:
+                for x in mylist:
+                    x = list(x)
+                    self.soldTable.insertItem(x)
+                    totalSold += (x[4])
+                self.soldTable.insertItem(["الاجمالي", "", "", "", totalSold])
+                mylist = db.execute("select * from fees where date like ?", [mydate])
+                for x in mylist:
+                    x = list(x)
+                    self.soldTable.insertItem(["", x[0], x[1],"", x[2]])
+                    totalFees += x[2]
+                self.soldTable.insertItem(["صافي الريح", "", "","", totalSold - totalFees])
+            except:
+                pass
+
+        #         else:
+        #             self.soldTable.insertItem(
+        #                 [x["name"], x["type"], "", str(x["price"]), str(x["year"]), str(x["month"]), str(x["day"])])
+        #         totalFees += x["price"]
+        # if self.userType:
+        #     self.soldTable.insertItem(
+        #         ["صافي الربح", "", "", "", "", str(round(totalSold - totalBuy - totalFees, 3)), "", "", ""])
+        # else:
+        #     self.soldTable.insertItem(["صافي الربح", "", "", str(round(totalSold - totalFees, 3)), "", "", ""])
+
+    def showforMonth(self):
+        self.soldTable.clearTable()
+        month = self.dateEdit.date().month()
+        year = self.dateEdit.date().year()
+        self.soldTable.clearTable()
+        if month < 10:
+            month = '0' + str(month)
+        date = str(year) + "-" + str(month)
+        self.showforDay(date)
+
+    def showforYear(self):
+        self.soldTable.clearTable()
+        year = self.dateEdit.date().year()
+        self.soldTable.clearTable()
+        date = str(year)
+        self.showforDay(date)
+
+    def searchforitem(self, shop):
+        if (shop):
             name = self.itemName_3.text()
             self.searchTable.clearTable()
             self.label_8.setStyleSheet("color: black")
             self.searchfor.setCurrentIndex(-1)
             self.itemName_3.clear()
-        elif(not where):
+        elif (not shop):
             self.set_state(False)
             name = self.storeName.text()
             self.storeTable.clearTable()
             self.label_14.setStyleSheet("color: black")
             self.searchfor_4.setCurrentIndex(-1)
             self.storeName.clear()
-        if len(name) > 0:
-            if(where):
-                it = items.get(name)
-            elif(not where):
-                it = itemsStore.get(name)
-            if it is None:
-                if(where):
-                    self.label_8.setStyleSheet("color: red")
-                elif (not where):
-                    self.label_14.setStyleSheet("color: red")
-            else:
-                # self.insertItemSearchTable(it, where)
-                myit.setData(it)
+        try:
+            if (shop):
+                value = db.execute("SELECT * from 'shop' where NAME = ?", [name])
+                value = list(value.fetchone())
                 if self.userType:
-                    self.canEdit = True
-                    if (where):
-                        self.delete_2.show()
-                        self.edit.show()
-                    elif (not where):
-                        self.set_state(True)
-                        self.numMove.setMaximum(itemsStore[name]["number"])
-        else:
-            if (where):
+                    value.append(value[3] * (value[6] - value[4]))
+                else:
+                    value.pop(4)
+                    value.pop(5)
+                self.searchTable.insertItem(value)
+            elif (not shop):
+                value = db.execute(
+                    "select shop.ID,store.NAME,store.type,store.count,shop.buy_price,shop.half_price,shop.sell_price from store left join shop on shop.Name = store.NAME where store.NAME = ?",
+                    [name])
+                value = list(value.fetchone())
+                if self.userType:
+                    value.append(value[3] * (value[6] - value[4]))
+                else:
+                    value.pop(4)
+                    value.pop(5)
+                self.storeTable.insertItem(value)
+            if self.userType:
+                inSearch = ["", "", "", "", "", "", "", ""]
+                if (shop):
+                    self.searchTable.insertItem(inSearch)
+                elif (not shop):
+                    self.storeTable.insertItem(inSearch)
+        except(TypeError):
+            if (shop):
                 self.label_8.setStyleSheet("color: red")
-            elif(not where):
+            elif (not shop):
                 self.label_14.setStyleSheet("color: red")
 
-    def search_cat(self,where):
-        if (where):
-            self.edit.hide()
-            self.delete_2.hide()
+    def search_cat(self, shop):
+        if (shop):
             searchtype = str(self.searchfor.currentText())
             self.searchTable.clearTable()
             self.label_8.setStyleSheet("color: black")
-            self.searchfor.setCurrentIndex(-1)
             self.itemName_3.clear()
-        elif (not where):
-            self.set_state(False)
+        elif (not shop):
             searchtype = str(self.searchfor_4.currentText())
             self.storeTable.clearTable()
             self.label_14.setStyleSheet("color: black")
-            self.searchfor_4.setCurrentIndex(-1)
             self.storeName.clear()
         if len(searchtype) > 0:
-            self.canEdit = False
             totalBuy = 0
             totalSell = 0
-            if (where and searchtype == "الكل"):
+            if (shop and searchtype == "الكل"):
                 values = db.execute("SELECT * from 'shop'")
                 values = list(values.fetchall())
-                for it in values:
-                    it = list(it)
-                    it.append(round(it[3] * (it[6] - it[4])))
-                    self.searchTable.insertItem(it)
-                    totalBuy += (it[3] * it[4])
-                    totalSell += (it[3] * it[6])
-            elif (where and not searchtype == "الكل"):
-                values = db.execute("SELECT * from 'shop' WHERE TYPE = ?", [searchtype])
+                for value in values:
+                    value = list(value)
+                    if self.userType:
+                        value.append(round(value[3] * (value[6] - value[4])))
+                        totalBuy += (value[3] * value[4])
+                        totalSell += (value[3] * value[6])
+                    else:
+                        value.pop(4)
+                        value.pop(5)
+                    self.searchTable.insertItem(value)
+            elif (shop and not searchtype == "الكل"):
+                values = db.execute("SELECT * from 'shop' where TYPE = ?", [searchtype])
                 values = list(values.fetchall())
-                for it in values:
-                    it = list(it)
-                    it.append(round(it[3] * (it[6]-it[4])))
-                    self.searchTable.insertItem(it)
-                    totalBuy += (it[3] * it[4])
-                    totalSell += (it[3] * it[6])
-
-            # elif (not where):
-            #     values = list(itemsStore.values())
-
+                for value in values:
+                    value = list(value)
+                    if self.userType:
+                        value.append(round(value[3] * (value[6] - value[4])))
+                        totalBuy += (value[3] * value[4])
+                        totalSell += (value[3] * value[6])
+                    else:
+                        value.pop(4)
+                        value.pop(5)
+                    self.searchTable.insertItem(value)
+            elif (not shop and searchtype == "الكل"):
+                values = db.execute(
+                    "select shop.ID,store.NAME,store.type,store.count,shop.buy_price,shop.half_price,shop.sell_price from store left join shop on shop.Name = store.NAME;")
+                values = list(values.fetchall())
+                for value in values:
+                    value = list(value)
+                    try:
+                        value.append(value[3] * (value[6] - value[4]))
+                        self.storeTable.insertItem(value)
+                        totalBuy += (value[3] * value[4])
+                        totalSell += (value[3] * value[6])
+                    except(TypeError):
+                        value.append('')
+                        self.storeTable.insertItem(value)
+            elif (not shop and not searchtype == "الكل"):
+                values = db.execute(
+                    "select shop.ID,store.NAME,store.type,store.count,shop.buy_price,shop.half_price,shop.sell_price from store left join shop on shop.Name = store.NAME where store.TYPE = ?;",
+                    [searchtype])
+                values = list(values.fetchall())
+                for value in values:
+                    value = list(value)
+                    try:
+                        value.append(value[3] * (value[6] - value[4]))
+                        self.storeTable.insertItem(value)
+                        totalBuy += (value[3] * value[4])
+                        totalSell += (value[3] * value[6])
+                    except(TypeError):
+                        value.append('')
+                        self.storeTable.insertItem(value)
             if self.userType:
-                inSearch = ["الاجمالي", "", "","", str(totalBuy), "", str(totalSell), str(round(totalSell - totalBuy))]
-                if (where):
+                inSearch = ["الاجمالي", "", "", "", totalBuy, "", totalSell, totalSell - totalBuy]
+                if (shop):
                     self.searchTable.insertItem(inSearch)
-                elif (not where):
+                elif (not shop):
                     self.storeTable.insertItem(inSearch)
 
-    def deleteItem(self, where):
-        msgbox = QMessageBox(QMessageBox.Question, "مسح منتج", "هل ترغب في مسح هذا المنتج؟")
-        msgbox.setDefaultButton(QMessageBox.Cancel)
-        msgbox.setIcon(QMessageBox.Warning)
-        msgbox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        retval = msgbox.exec_()
-        if retval == QMessageBox.Ok:
-            it = myit.getData()
-            print(it)
-            if(where):
-                items.pop(it["name"])
-                self.searchTable.clearTable()
-            elif(not where):
-                itemsStore.pop(it["name"])
-                self.storeTable.clearTable()
-            self.updateDataFile(where)
-
-    def insertItemSearchTable(self, list, where):
-        # if self.userType:
-        #     inSearch = [list["name"], list["type"], str(list["number"]), str(list["buyPrice"]), str(list["halfprice"]), str(list["sellPrice"]), str()]
-        # else:
-        #     inSearch = [list["name"], list["type"], str(list["number"]),str(list["sellPrice"])]
-
-        if(where):
-            self.searchTable.insertItem(list)
-        # elif (not where):
-        #     self.storeTable.insertItem(inSearch)
-
     def addItem(self):
-        name = self.itemName.text()
+        name = self.itemName.text().strip()
         itemtype = str(self.itemType.currentText())
         num = self.number.value()
         sellPrice = self.sell.value()
         buyPrice = self.buy.value()
         halfbuy = self.halfbuy.value()
 
-        if len(name) > 2 and len(itemtype) > 2 and sellPrice > 0 and buyPrice > 0 and sellPrice > buyPrice and halfbuy > 0 \
-                and sellPrice >= halfbuy and halfbuy >= buyPrice:
+        if len(name) > 2 and len(itemtype) > 2 \
+                and sellPrice > 0 and buyPrice > 0 and sellPrice > buyPrice \
+                and halfbuy > 0 and sellPrice >= halfbuy and halfbuy >= buyPrice:
             if (self.inShop.isChecked()):
-               try:
-                db.execute("INSERT INTO 'shop' (NAME,TYPE,COUNT,HALF_PRICE,SELL_PRICE,BUY_PRICE)values(?,?,?,?,?,?)",
-                             (name, itemtype, num, halfbuy, sellPrice, buyPrice))
-                self.ClearAddData()
-               except(sqlite3.IntegrityError):
-                   self.label.setStyleSheet("color: red")
-                   self.itemName.setText(name + " هذا المنتج موجود بالفعل")
-            elif(self.inStore.isChecked()):
                 try:
-                    db.execute("INSERT INTO 'store' (NAME ,COUNT ,TYPE ) values (?,?,?)",(name,num,itemtype))
+                    db.execute(
+                        "INSERT INTO 'shop' (NAME,TYPE,COUNT,HALF_PRICE,SELL_PRICE,BUY_PRICE)values(?,?,?,?,?,?)",
+                        (name, itemtype, num, halfbuy, sellPrice, buyPrice))
                     self.ClearAddData()
                 except(sqlite3.IntegrityError):
                     self.label.setStyleSheet("color: red")
                     self.itemName.setText(name + " هذا المنتج موجود بالفعل")
-
+            elif (self.inStore.isChecked()):
+                try:
+                    db.execute("INSERT INTO 'store' (NAME ,COUNT ,TYPE ) values (?,?,?)", (name, num, itemtype))
+                    try:
+                        db.execute(
+                            "INSERT INTO 'shop' (NAME,TYPE,COUNT,HALF_PRICE,SELL_PRICE,BUY_PRICE)values(?,?,?,?,?,?)",
+                            (name, itemtype, num, halfbuy, sellPrice, buyPrice))
+                    except:
+                        pass
+                    self.ClearAddData()
+                except(sqlite3.IntegrityError):
+                    self.label.setStyleSheet("color: red")
+                    self.itemName.setText(name + " هذا المنتج موجود بالفعل")
         elif len(name) <= 2:
             self.label.setStyleSheet("color: red")
         elif len(itemtype) <= 2:
             self.label_2.setStyleSheet("color: red")
-        elif sellPrice == 0 or buyPrice == 0 or halfbuy == 0 or sellPrice < buyPrice or sellPrice < halfbuy or halfbuy < buyPrice :
+        elif sellPrice == 0 or buyPrice == 0 or halfbuy == 0 or sellPrice < buyPrice or sellPrice < halfbuy or halfbuy < buyPrice:
             self.label_5.setStyleSheet("color: red")
             self.label_4.setStyleSheet("color: red")
             self.label_10.setStyleSheet("color: red")
@@ -1521,56 +1428,76 @@ class Ui_MainWindow(object):
         self.label_2.setStyleSheet("color: black")
         self.label_10.setStyleSheet("color: black")
 
-    def updateDataFile(self, where):
-        if(where):
-            dataFile.updateData(items)
-            completer = QCompleter(list(items.keys()))
-            self.itemName_3.setCompleter(completer)
-            self.itemName_2.setCompleter(completer)
-        elif(not where):
-            storeFile.updateData(itemsStore)
-            completer = QCompleter(list(itemsStore.keys()))
-            self.storeName.setCompleter(completer)
-
     def sellItem(self):
         name = self.itemName_2.text()
         number = self.number_2.value()
+        place = None
         self.clearSellTab()
         if number <= 0:
             number = 1
-        if len(name) > 0 and number > 0:
-            if (self.fromShop.isChecked()):
-                it = db.execute("select * from 'shop' where name = ?", [name])
-                it = list(it.fetchone())
-            elif(self.fromStore.isChecked()):
-                it = (itemsStore.get(name)).copy()
-
-            if it is None:
-                self.label_6.setStyleSheet("color: red")
-            elif it[3] <= 0:
-                self.label_6.setStyleSheet("color: red")
-                self.itemName_2.setText((name + " غير متوفر"))
-            elif number > it[3]:
-                self.label_6.setStyleSheet("color: red")
-                self.itemName_2.setText((name +" متوفر فقط " + str(it[3])))
-            else:
-                try:
-
-                    db.execute("Insert into 'sales' (ID,NUMBER ,SOLD_DATE ) values (?,?,?)",
-                               (it[0], number, datetime.datetime.now().date()))
-                    db.commit()
-                except:
+        if len(name) > 0 and name not in MainWindow.TD.inList():
+            try:
+                if (self.fromShop.isChecked() and self.qtaay.isChecked()):
+                    it = db.execute("select count,id,name,type,sell_price from 'shop' where name = ?", [name])
+                    it = list(it.fetchone())
+                    place = True
+                elif (self.fromShop.isChecked() and self.gomla.isChecked()):
+                    it = db.execute("select count,id,name,type,half_price from 'shop' where name = ?", [name])
+                    it = list(it.fetchone())
+                    place = True
+                elif (self.fromStore.isChecked() and self.qtaay.isChecked()):
+                    it = db.execute(
+                        "select store.count,shop.ID,store.NAME,store.type,shop.sell_price from store left join shop on shop.Name = store.NAME where store.NAME = ?",
+                        [name])
+                    it = list(it.fetchone())
+                    place = False
+                elif (self.fromStore.isChecked() and self.gomla.isChecked()):
+                    it = db.execute(
+                        "select store.count,shop.ID,store.NAME,store.type,shop.half_price from store left join shop on shop.Name = store.NAME where store.NAME = ?",
+                        [name])
+                    it = list(it.fetchone())
+                    place = False
+                #     it[0] -> count in store table
+                if (it[0] <= 0):
                     self.label_6.setStyleSheet("color: red")
-                    self.itemName_2.setText((name + " تمت اضافته"))
+                    self.itemName_2.setText((name + " غير متوفر"))
+                elif (it[0] >= number):
+                    it.insert(4, number)
+                    # it[5] -> the price
+                    it.append(number * it[5])
+                    if place:
+                        it.append("المحل")
+                    else:
+                        it.append("المخزن")
+                    self.sellTable.removeItemRow()
+                    MainWindow.TD.addData(it)
+                    self.sellTable.insertItem(it[1:])
+                    self.controlleSellPrice()
+                    self.donesell.show()
+
+                else:
+                    self.label_6.setStyleSheet("color: red")
+                    self.itemName_2.setText((name + " متوفر فقط " + str(it[0])))
+            except(TypeError):
+                print(Exception)
+                self.label_6.setStyleSheet("color: red")
+                self.itemName_2.setText((name + " غير متوفر "))
         elif len(name) <= 0:
             self.label_6.setStyleSheet("color: red")
+        elif name in MainWindow.TD.inList():
+            self.label_6.setStyleSheet("color: red")
+            self.itemName_2.setText((name + " تمت اضافته للمشتريات "))
 
-    def insertItemSellTable(self, list, number):
-        toSell = [list["name"], list["type"], str(number), str(list["sellPrice"]), str(round(list["sellPrice"]*number, 3))]
-        self.sellTable.insertItem(toSell)
+    def controlleSellPrice(self):
+        totalProducts = 0
+        totalPrice = 0
+        for product in MainWindow.TD.getData():
+            totalProducts += product["sellCount"]
+            totalPrice += product["profit"]
+        self.sellTable.insertItem(["الاجمالي", "", "", totalProducts, "", totalPrice, ""])
 
     def clearSellTab(self):
-        self.itemName_2.clear()
+        self.itemName_2.setText("")
         self.label_6.setStyleSheet("color: black")
         self.number_2.setValue(0)
         self.label_7.setStyleSheet("color: black")
@@ -1580,52 +1507,32 @@ class Ui_MainWindow(object):
         self.clearSellTab()
         self.addsell.show()
         self.donesell.hide()
-        self.deletelastitem.hide()
-        sold.clear()
-        soldNames.clear()
 
     def removeRow(self):
         self.sellTable.removeItemRow()
-        sold.popitem()
-        if(self.sellTable.rowCount() == 0 ):
+        if (self.sellTable.rowCount() == 0):
             self.clearSellTable()
 
     def doneSelling(self):
-        cost = 0
-        for item in list(sold.keys()):
-            try:
-                if (self.fromShop.isChecked()):
-                    items.get(item)["number"] -= sold.get(item)["number"]
-                    flag = True
-                elif(self.fromStore.isChecked()):
-                    itemsStore.get(item)["number"] -= sold.get(item)["number"]
-                    flag = False
-            except:
-                print("error")
-            cost += (sold.get(item)["number"] * sold.get(item)["sellPrice"])
-        self.sellTable.insertItem(["اجمالي الحساب", "", "", "", str(cost)])
+        sold = MainWindow.TD.getData()
+        for it in sold:
+            db.execute("INSERT INTO 'sales' (name ,number ,sold_date, from_where) values (?,?,?,?)",
+                       [it["name"], it["sellCount"], datetime.date.today(), it["fromWhere"]])
+            if it["fromWhere"] == "المحل":
+                db.execute("update shop set count = ? where name = ?;", [it["allCount"] - it["sellCount"], it["name"]])
+            elif it["fromWhere"] == "المخزن":
+                db.execute("update store set count = ? where name = ?;", [it["allCount"] - it["sellCount"], it["name"]])
         self.donesell.hide()
-        self.deletelastitem.hide()
         self.addsell.hide()
-        self.updateDataFile(flag)
-        sL = soldFile.readData()
-        for x in list(sold.values()):
-            sL.append(x)
-        soldFile.updateData(sL)
-        sold.clear()
-        soldNames.clear()
+        MainWindow.TD.clearData()
         self.thisDay.click()
 
     def set_state(self, state):
-        if(state):
+        if (state):
             self.label_16.show()
             self.numMove.show()
             self.moveToShop.show()
-            self.deleteStore.show()
-            self.editStore.show()
-        elif(not state):
+        elif (not state):
             self.label_16.hide()
             self.numMove.hide()
             self.moveToShop.hide()
-            self.deleteStore.hide()
-            self.editStore.hide()

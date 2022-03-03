@@ -1,14 +1,23 @@
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 import mainWindow
 
-class Ui_login(object):
-    def setupUi(self, login):
-        self.login = login
-        self.login.setObjectName("login")
-        self.login.resize(669, 155)
-        self.login.setMaximumSize(QtCore.QSize(16777215, 160))
-        self.centralwidget = QtWidgets.QWidget(self.login)
+class login(QtWidgets.QMainWindow):
+
+    def closeEvent(self, event):
+        reply = QMessageBox.question(self, 'اغلاق', 'هل تريد الخروج',QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+            mainWindow.db.commit()
+        else:
+            event.ignore()
+
+    def __init__(self):
+        super().__init__()
+        self.resize(669, 155)
+        self.setMaximumSize(QtCore.QSize(16777215, 160))
+        self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -73,13 +82,13 @@ class Ui_login(object):
         self.error_lab.hide()
         self.gridLayout.addWidget(self.error_lab, 2, 1, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 1, 0, 1, 1)
-        self.login.setCentralWidget(self.centralwidget)
-        self.retranslateUi(self.login)
-        QtCore.QMetaObject.connectSlotsByName(self.login)
+        self.setCentralWidget(self.centralwidget)
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
 
-    def retranslateUi(self, login):
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        login.setWindowTitle(_translate("login", "login"))
+        self.setWindowTitle(_translate("login", "login"))
         self.user_name_lab.setText(_translate("login", "الاسم"))
         self.password_lab.setText(_translate("login", "كلمه المرور"))
         self.login_BUT.setText(_translate("login", "تسجيل الدخول"))
@@ -87,23 +96,19 @@ class Ui_login(object):
     def __login_func(self):
         name = self.user_name_input.text()
         password = self.password_input.text()
-        if name == "yaya9494" or 1:
-            if password == "8063" or 1:
-                self.MainWindow = QtWidgets.QMainWindow()
-                self.ui = mainWindow.Ui_MainWindow(True)
-                self.ui.setupUi(self.MainWindow)
+        if name == "yaya9494" :
+            if password == "8063" :
+                self.MainWindow = mainWindow.MainWindow(True)
                 self.MainWindow.show()
-                self.login.hide()
+                self.hide()
             else:
                 self.error_lab.setText("كلمه المرور خاطئه")
                 self.error_lab.show()
         elif name == "12345":
             if password == "12345":
-                self.MainWindow = QtWidgets.QMainWindow()
-                self.ui = mainWindow.Ui_MainWindow(False)
-                self.ui.setupUi(self.MainWindow)
+                self.MainWindow = mainWindow.MainWindow(False)
                 self.MainWindow.show()
-                self.login.hide()
+                self.hide()
             else:
                 self.error_lab.setText("كلمه المرور خاطئه")
                 self.error_lab.show()

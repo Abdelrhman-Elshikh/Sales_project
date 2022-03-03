@@ -1,6 +1,6 @@
 import mainWindow
 
-class demoWindow(mainWindow.Ui_MainWindow):
+class demoWindow(mainWindow.MainWindow):
     def addFee(self):
         pass
     def storeToShop(self):
@@ -13,25 +13,13 @@ class demoWindow(mainWindow.Ui_MainWindow):
         pass
     def showforYear(self):
         pass
-    def insertItemSoldTable(self, list):
-        pass
-    def editpage(self, where):
-        pass
     def searchforitem(self, where):
-        pass
-    def deleteItem(self, where):
-        pass
-    def insertItemSearchTable(self, list, where):
         pass
     def addItem(self):
         pass
     def ClearAddData(self):
         pass
-    def updateDataFile(self, where):
-        pass
     def sellItem(self):
-        pass
-    def insertItemSellTable(self, list, number):
         pass
     def clearSellTab(self):
         pass
