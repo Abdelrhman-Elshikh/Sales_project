@@ -5,7 +5,6 @@ import mainWindow
 import loop
 
 
-
 class EditWindow(QtWidgets.QMainWindow):
     def __init__(self, dataList):
         super().__init__()
@@ -74,7 +73,7 @@ class EditWindow(QtWidgets.QMainWindow):
         self.codelabel.setIndent(0)
         self.codelabel.setObjectName("codelabel")
         self.codelabel.setText("الكود")
-        self.codeGrid.addWidget(self.codelabel,0,1,1,1)
+        self.codeGrid.addWidget(self.codelabel, 0, 1, 1, 1)
         self.idText = QtWidgets.QLabel()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(4)
@@ -290,7 +289,9 @@ class EditWindow(QtWidgets.QMainWindow):
 
         if sellPrice > 0 and buyPrice > 0 and sellPrice > buyPrice and halfbuy > 0 \
                 and sellPrice >= halfbuy and halfbuy >= buyPrice:
-            mainWindow.db.execute("UPDATE 'shop' set count = ? , BUY_PRICE = ? , HALF_PRICE = ? , SELL_PRICE = ? WHERE id = ?",[num,buyPrice,halfbuy,sellPrice,self.id])
+            mainWindow.db.execute(
+                "UPDATE 'shop' set count = ? , BUY_PRICE = ? , HALF_PRICE = ? , SELL_PRICE = ? WHERE id = ?",
+                [num, buyPrice, halfbuy, sellPrice, self.id])
             loop.loop.quit()
 
         elif sellPrice == 0 or buyPrice == 0 or halfbuy == 0 or sellPrice < buyPrice or sellPrice < halfbuy or halfbuy < buyPrice:

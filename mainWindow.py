@@ -1,10 +1,13 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
 import datetime
+import sqlite3
+
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QCompleter, QMessageBox
+
 import login
-import sellDataHelper, tableController
-import sqlite3
+import sellDataHelper
+import tableController
 
 db = sqlite3.connect("/home/abdelrhman/PycharmProjects/pythonProject/identifier.sqlite")
 

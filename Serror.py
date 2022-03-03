@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtWidgets
 
 import demo_mode
 
+
 class Ui_support_error(object):
     def setupUi(self, support_error):
         self.support_error = support_error
@@ -35,16 +36,17 @@ class Ui_support_error(object):
         self.meme.setSizePolicy(sizePolicy)
         self.meme.setMinimumSize(QtCore.QSize(400, 200))
         self.meme.setMaximumSize(QtCore.QSize(650, 300))
-        self.meme.setStyleSheet("background-image: url(meme.jpg);background-repeat: no-repeat;background-position: center;opacity: 0.5")
-        self.verticalLayout.addWidget(self.meme,1 ,0 ,1 ,1)
+        self.meme.setStyleSheet(
+            "background-image: url(meme.jpg);background-repeat: no-repeat;background-position: center;opacity: 0.5")
+        self.verticalLayout.addWidget(self.meme, 1, 0, 1, 1)
         self.memeTxt = QtWidgets.QLabel()
         self.memeTxt.setText("هو يدعم بس لازم تشتريه نيهاهاهاها")
-        self.verticalLayout.addWidget(self.memeTxt,2,0,1,1,QtCore.Qt.AlignCenter|QtCore.Qt.AlignBottom)
+        self.verticalLayout.addWidget(self.memeTxt, 2, 0, 1, 1, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
 
         self.demo = QtWidgets.QPushButton(self.centralwidget)
         self.demo.setObjectName("demo")
         self.demo.clicked.connect(self.showDemo)
-        self.verticalLayout.addWidget(self.demo, 3,0,1,1, QtCore.Qt.AlignRight|QtCore.Qt.AlignBottom)
+        self.verticalLayout.addWidget(self.demo, 3, 0, 1, 1, QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         self.support_error.setCentralWidget(self.centralwidget)
@@ -54,11 +56,11 @@ class Ui_support_error(object):
     def retranslateUi(self, support_error):
         _translate = QtCore.QCoreApplication.translate
         support_error.setWindowTitle(_translate("support_error", "support_error"))
-        self.label.setText(_translate("support_error", "للاسف جهازك لا يدعم تشغيل هذا البرنامج برجاء التواصل مع الشركه"))
+        self.label.setText(
+            _translate("support_error", "للاسف جهازك لا يدعم تشغيل هذا البرنامج برجاء التواصل مع الشركه"))
         self.demo.setText(_translate("support_error", "تجربه النسخه المجانيه"))
 
     def showDemo(self):
-
         self.MainWindow = QtWidgets.QMainWindow()
         self.ui = demo_mode.demoWindow()
         self.ui.setupUi(self.MainWindow)

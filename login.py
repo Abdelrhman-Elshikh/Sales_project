@@ -3,10 +3,11 @@ from PyQt5.QtWidgets import QMessageBox
 
 import mainWindow
 
+
 class login(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'اغلاق', 'هل تريد الخروج',QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, 'اغلاق', 'هل تريد الخروج', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             event.accept()
             mainWindow.db.commit()
@@ -96,8 +97,8 @@ class login(QtWidgets.QMainWindow):
     def __login_func(self):
         name = self.user_name_input.text()
         password = self.password_input.text()
-        if name == "yaya9494" :
-            if password == "8063" :
+        if name == "yaya9494":
+            if password == "8063":
                 self.MainWindow = mainWindow.MainWindow(True)
                 self.MainWindow.show()
                 self.hide()
@@ -115,6 +116,3 @@ class login(QtWidgets.QMainWindow):
         else:
             self.error_lab.setText("خطأ اسم المستخدم او كلمه المرور")
             self.error_lab.show()
-
-
-

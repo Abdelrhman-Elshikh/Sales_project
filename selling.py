@@ -1,7 +1,10 @@
+import Serror
+import sys
+import uuid
+
 from PyQt5 import QtWidgets
 
 import login
-import uuid, Serror, sys
 
 if __name__ == "__main__" and hex(uuid.getnode()) == "0x8d0b7aaec4d5":
     app = QtWidgets.QApplication(sys.argv)

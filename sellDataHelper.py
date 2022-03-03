@@ -1,6 +1,3 @@
-import mainWindow
-
-
 class datahelper(object):
 
     def __init__(self):

@@ -79,6 +79,7 @@ class TableWidget(QTableWidget):
             data.append(self.item(row, i).text())
         return data
 
+
 # controllButtons for "Search for product tab"
 class Search(TableWidget):
     def controllButtons(self, Row, Colum):
@@ -104,6 +105,7 @@ class Search(TableWidget):
                 pass
         else:
             pass
+
 
 # controllButtons for "sell Item tab"
 class sellTab(TableWidget):
@@ -142,4 +144,4 @@ class sellTab(TableWidget):
         for product in mainWindow.MainWindow.TD.getData():
             totalProducts += product["sellCount"]
             totalPrice += product["profit"]
-        self.insertItem(["الاجمالي", "", "", totalProducts, "", totalPrice,""])
+        self.insertItem(["الاجمالي", "", "", totalProducts, "", totalPrice, ""])
